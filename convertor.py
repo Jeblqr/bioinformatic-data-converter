@@ -16,7 +16,7 @@ def read_vcf_file(fn: str, compression: Optional[str] = None) -> pd.DataFrame:
     Returns:
         DataFrame
     """
-    # 找到列名行（以#CHROM开头的行）
+    # 确定打开方式
     if compression == "gzip" or fn.endswith(".gz"):
         opener = gzip.open
         mode = "rt"
@@ -24,56 +24,42 @@ def read_vcf_file(fn: str, compression: Optional[str] = None) -> pd.DataFrame:
         opener = open
         mode = "r"
 
-    with opener(fn, mode) as f:
-        for line in f:
-            if line.startswith("#CHROM") or line.startswith("CHROM"):
-                # 找到列名行
-                header_line = line
-                break
-            elif not line.startswith("##"):
-                # 如果不是##注释也不是#CHROM，可能是其他格式
-                header_line = line
-                break
-
-    # 使用找到的列名读取数据
-    df = pd.read_csv(
-        fn, sep="\t", compression=compression, comment="##", header=None, skiprows=0
-    )
-
-    # 手动处理列名
-    columns = header_line.strip().split("\t")
-    # 移除列名开头的#
-    columns = [col.lstrip("#") for col in columns]
-
-    # 找到数据开始的行号
-    skip_rows = 0
-    if compression == "gzip" or fn.endswith(".gz"):
-        opener = gzip.open
-        mode = "rt"
-    else:
-        opener = open
-        mode = "r"
+    # 第一遍：找到列名和数据开始位置
+    header_line = None
+    data_start_line = 0
 
     with opener(fn, mode) as f:
         for i, line in enumerate(f):
-            if line.startswith("#CHROM") or (
-                line.startswith("CHROM") and not line.startswith("##")
-            ):
-                skip_rows = i + 1
+            if line.startswith("#CHROM"):
+                # 找到列名行
+                header_line = line.strip()
+                data_start_line = i + 1
                 break
-            elif not line.startswith("##") and not line.startswith("#"):
-                skip_rows = i
+            elif line.startswith("CHROM") and not line.startswith("##"):
+                # 没有#的列名行
+                header_line = line.strip()
+                data_start_line = i + 1
                 break
 
-    # 重新读取，跳过所有注释行
-    df = pd.read_csv(
-        fn,
-        sep="\t",
-        compression=compression,
-        skiprows=skip_rows,
-        header=None,
-        names=columns,
-    )
+    if header_line is None:
+        raise ValueError(f"Could not find header line in VCF file: {fn}")
+
+    # 解析列名
+    columns = header_line.split("\t")
+    columns = [col.lstrip("#") for col in columns]  # 移除开头的#
+
+    # 第二遍：读取数据（跳过所有注释行）
+    data_rows = []
+    with opener(fn, mode) as f:
+        for i, line in enumerate(f):
+            if i < data_start_line:
+                continue
+            if line.startswith("#"):
+                continue
+            data_rows.append(line.strip().split("\t"))
+
+    # 创建DataFrame
+    df = pd.DataFrame(data_rows, columns=columns)
 
     return df
 
@@ -338,7 +324,7 @@ def convert_single_file(
 
     if verbose:
         print(
-            f"  Detected format: sep='{repr(sep)}', compression={compression}, is_vcf={is_vcf}"
+            f"  Detected format: sep={repr(sep)}, compression={compression}, is_vcf={is_vcf}"
         )
 
     # 读取数据
