@@ -2,10 +2,88 @@ import pandas as pd
 import re
 from typing import Dict, List, Optional, Union, Tuple
 from pathlib import Path
+import gzip
+
+
+def read_vcf_file(fn: str, compression: Optional[str] = None) -> pd.DataFrame:
+    """
+    专门读取VCF文件，处理##注释和#CHROM列名
+
+    Args:
+        fn: 文件路径
+        compression: 压缩格式
+
+    Returns:
+        DataFrame
+    """
+    # 找到列名行（以#CHROM开头的行）
+    if compression == "gzip" or fn.endswith(".gz"):
+        opener = gzip.open
+        mode = "rt"
+    else:
+        opener = open
+        mode = "r"
+
+    with opener(fn, mode) as f:
+        for line in f:
+            if line.startswith("#CHROM") or line.startswith("CHROM"):
+                # 找到列名行
+                header_line = line
+                break
+            elif not line.startswith("##"):
+                # 如果不是##注释也不是#CHROM，可能是其他格式
+                header_line = line
+                break
+
+    # 使用找到的列名读取数据
+    df = pd.read_csv(
+        fn, sep="\t", compression=compression, comment="##", header=None, skiprows=0
+    )
+
+    # 手动处理列名
+    columns = header_line.strip().split("\t")
+    # 移除列名开头的#
+    columns = [col.lstrip("#") for col in columns]
+
+    # 找到数据开始的行号
+    skip_rows = 0
+    if compression == "gzip" or fn.endswith(".gz"):
+        opener = gzip.open
+        mode = "rt"
+    else:
+        opener = open
+        mode = "r"
+
+    with opener(fn, mode) as f:
+        for i, line in enumerate(f):
+            if line.startswith("#CHROM") or (
+                line.startswith("CHROM") and not line.startswith("##")
+            ):
+                skip_rows = i + 1
+                break
+            elif not line.startswith("##") and not line.startswith("#"):
+                skip_rows = i
+                break
+
+    # 重新读取，跳过所有注释行
+    df = pd.read_csv(
+        fn,
+        sep="\t",
+        compression=compression,
+        skiprows=skip_rows,
+        header=None,
+        names=columns,
+    )
+
+    return df
 
 
 def read_data(
-    fn: str, sep: str = "\s+", compression: Optional[str] = None
+    fn: str,
+    sep: str = r"\s+",
+    compression: Optional[str] = None,
+    comment: Optional[str] = None,
+    is_vcf: bool = False,
 ) -> pd.DataFrame:
     """
     读取遗传学数据文件
@@ -14,11 +92,16 @@ def read_data(
         fn: 文件路径
         sep: 分隔符，默认空白符
         compression: 压缩格式 (None, 'gzip', 'bz2', 'zip', 'xz')
+        comment: 注释符号，以此开头的行将被忽略
+        is_vcf: 是否是VCF文件
 
     Returns:
         DataFrame
     """
-    return pd.read_csv(fn, sep=sep, compression=compression)
+    if is_vcf:
+        return read_vcf_file(fn, compression)
+    else:
+        return pd.read_csv(fn, sep=sep, compression=compression, comment=comment)
 
 
 def create_genetic_column_patterns() -> Dict[str, re.Pattern]:
@@ -29,41 +112,44 @@ def create_genetic_column_patterns() -> Dict[str, re.Pattern]:
         字典，键为标准字段名，值为对应的正则表达式模式
     """
     patterns = {
-        "chr": re.compile(r"^(chr|chromosome|chrom|#chr|#chrom)$", re.IGNORECASE),
+        "chr": re.compile(
+            r"^(chr|chromosome|chrom|#?chr|#?chrom|#?CHROM)$", re.IGNORECASE
+        ),
         "pos": re.compile(
-            r"^(pos|position|bp|base_pair|base_position|ps)$", re.IGNORECASE
+            r"^(pos|position|bp|base_pair|base_position|ps|POS)$", re.IGNORECASE
         ),
         "a1": re.compile(
-            r"^(a1|allele1|allele_1|effect_allele|ea|alt|alt_allele)$", re.IGNORECASE
+            r"^(a1|allele1|allele_1|effect_allele|ea|alt|alt_allele|ALT)$",
+            re.IGNORECASE,
         ),
         "a2": re.compile(
-            r"^(a2|allele2|allele_2|other_allele|oa|ref|ref_allele|reference_allele)$",
+            r"^(a2|allele2|allele_2|other_allele|oa|ref|ref_allele|reference_allele|REF)$",
             re.IGNORECASE,
         ),
         "n": re.compile(
             r"^(n|n_samples|sample_size|nsize|ns|n_total|ntotal)$", re.IGNORECASE
         ),
         "frq": re.compile(
-            r"^(frq|freq|frequency|maf|af|eaf|allele_freq|allele_frequency|a1_freq|effect_allele_freq)$",
+            r"^(frq|freq|frequency|maf|af|eaf|allele_freq|allele_frequency|a1_freq|effect_allele_freq|AF)$",
             re.IGNORECASE,
         ),
         "info": re.compile(
-            r"^(info|imputation_quality|impquality|r2|rsq)$", re.IGNORECASE
+            r"^(info|imputation_quality|impquality|r2|rsq|INFO)$", re.IGNORECASE
         ),
         "beta": re.compile(
-            r"^(beta|b|effect|coef|coefficient|effect_size)$", re.IGNORECASE
+            r"^(beta|b|effect|coef|coefficient|effect_size|BETA)$", re.IGNORECASE
         ),
-        "or": re.compile(r"^(or|odds_ratio|oddsratio)$", re.IGNORECASE),
+        "or": re.compile(r"^(or|odds_ratio|oddsratio|OR)$", re.IGNORECASE),
         "z": re.compile(r"^(z|zscore|z_score|zstat|z_statistic)$", re.IGNORECASE),
         "rsid": re.compile(
-            r"^(rsid|snp|snpid|snp_id|variant_id|varid|id|marker|markername|rs)$",
+            r"^(rsid|snp|snpid|snp_id|variant_id|varid|id|marker|markername|rs|ID)$",
             re.IGNORECASE,
         ),
         "pval": re.compile(
-            r"^(p|pval|p_value|pvalue|p-value|p.value|sig)$", re.IGNORECASE
+            r"^(p|pval|p_value|pvalue|p-value|p.value|sig|pval_nominal)$", re.IGNORECASE
         ),
         "se": re.compile(
-            r"^(se|stderr|standard_error|std_err|std_error)$", re.IGNORECASE
+            r"^(se|stderr|standard_error|std_err|std_error|SE)$", re.IGNORECASE
         ),
     }
     return patterns
@@ -113,15 +199,15 @@ def match_columns(
     return result
 
 
-def detect_file_format(filename: str) -> Tuple[str, Optional[str]]:
+def detect_file_format(filename: str) -> Tuple[str, Optional[str], Optional[str], bool]:
     """
-    根据文件扩展名自动检测分隔符和压缩格式
+    根据文件扩展名自动检测分隔符、压缩格式、注释符和是否为VCF
 
     Args:
         filename: 文件路径
 
     Returns:
-        (分隔符, 压缩格式) 元组
+        (分隔符, 压缩格式, 注释符, 是否VCF) 元组
     """
     path = Path(filename)
     suffixes = "".join(path.suffixes).lower()
@@ -137,17 +223,21 @@ def detect_file_format(filename: str) -> Tuple[str, Optional[str]]:
     elif ".xz" in suffixes:
         compression = "xz"
 
-    # 检测分隔符
+    # 检测分隔符、注释符和是否为VCF
+    comment = None
+    is_vcf = False
     if ".vcf" in suffixes:
         sep = "\t"
+        is_vcf = True
+        comment = None  # VCF用专门的函数处理
     elif ".tsv" in suffixes or ".tab" in suffixes:
         sep = "\t"
     elif ".csv" in suffixes:
         sep = ","
     else:
-        sep = "\s+"  # 默认空白符
+        sep = r"\s+"  # 默认空白符
 
-    return sep, compression
+    return sep, compression, comment, is_vcf
 
 
 def standardize_columns(
@@ -213,6 +303,7 @@ def convert_single_file(
     filename: str,
     sep: Optional[str] = None,
     compression: Optional[str] = None,
+    comment: Optional[str] = None,
     column_mapping: Optional[Dict[str, str]] = None,
     custom_patterns: Optional[Dict[str, re.Pattern]] = None,
     metadata: Optional[Dict[str, any]] = None,
@@ -226,6 +317,7 @@ def convert_single_file(
         filename: 文件路径
         sep: 分隔符，如果为None则自动检测
         compression: 压缩格式，如果为None则自动检测
+        comment: 注释符号，如果为None则自动检测
         column_mapping: 手动指定的列名映射
         custom_patterns: 自定义的正则表达式模式
         metadata: 要添加的元数据
@@ -239,15 +331,20 @@ def convert_single_file(
         print(f"\nProcessing file: {filename}")
 
     # 自动检测文件格式
-    if sep is None or compression is None:
-        auto_sep, auto_compression = detect_file_format(filename)
-        sep = sep or auto_sep
-        compression = compression or auto_compression
-        if verbose:
-            print(f"  Detected format: sep='{sep}', compression={compression}")
+    auto_sep, auto_compression, auto_comment, is_vcf = detect_file_format(filename)
+    sep = sep or auto_sep
+    compression = compression or auto_compression
+    comment = comment if comment is not None else auto_comment
+
+    if verbose:
+        print(
+            f"  Detected format: sep='{repr(sep)}', compression={compression}, is_vcf={is_vcf}"
+        )
 
     # 读取数据
-    df = read_data(filename, sep=sep, compression=compression)
+    df = read_data(
+        filename, sep=sep, compression=compression, comment=comment, is_vcf=is_vcf
+    )
 
     if verbose:
         print(f"  Original shape: {df.shape}")
@@ -280,6 +377,7 @@ def convert_from_metadata(
     metadata_columns: Optional[List[str]] = None,
     sep: Optional[str] = None,
     compression: Optional[str] = None,
+    comment: Optional[str] = None,
     column_mapping: Optional[Dict[str, Dict[str, str]]] = None,
     custom_patterns: Optional[Dict[str, re.Pattern]] = None,
     keep_unmatched: bool = False,
@@ -294,6 +392,7 @@ def convert_from_metadata(
         metadata_columns: 要作为元数据添加到结果中的列名列表，如果为None则添加除文件路径外的所有列
         sep: 分隔符，如果为None则自动检测
         compression: 压缩格式，如果为None则自动检测
+        comment: 注释符号，如果为None则自动检测
         column_mapping: 文件特定的列名映射 {文件路径: {原始列名: 标准列名}}
         custom_patterns: 自定义的正则表达式模式
         keep_unmatched: 是否保留未匹配的列
@@ -326,6 +425,7 @@ def convert_from_metadata(
                 filename=filename,
                 sep=sep,
                 compression=compression,
+                comment=comment,
                 column_mapping=file_mapping,
                 custom_patterns=custom_patterns,
                 metadata=file_metadata,
@@ -350,6 +450,7 @@ def convert_multiple_files(
     file_list: List[str],
     sep: Optional[str] = None,
     compression: Optional[str] = None,
+    comment: Optional[str] = None,
     column_mapping: Optional[Dict[str, Dict[str, str]]] = None,
     custom_patterns: Optional[Dict[str, re.Pattern]] = None,
     metadata: Optional[Dict[str, Dict[str, any]]] = None,
@@ -363,6 +464,7 @@ def convert_multiple_files(
         file_list: 文件路径列表
         sep: 分隔符，如果为None则自动检测
         compression: 压缩格式，如果为None则自动检测
+        comment: 注释符号，如果为None则自动检测
         column_mapping: 文件特定的列名映射 {文件路径: {原始列名: 标准列名}}
         custom_patterns: 自定义的正则表达式模式
         metadata: 文件特定的元数据 {文件路径: {列名: 值}}
@@ -384,6 +486,7 @@ def convert_multiple_files(
                 filename=filename,
                 sep=sep,
                 compression=compression,
+                comment=comment,
                 column_mapping=file_mapping,
                 custom_patterns=custom_patterns,
                 metadata=file_metadata,

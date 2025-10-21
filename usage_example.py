@@ -47,12 +47,12 @@ def example_from_metadata():
         {
             "trait": ["AGA", "AGA", "AGA", "AGA", "AGA", "ANX"],
             "file": [
-                "/home/qrluo/data/data/aga_metabolism/data/raw/AGA/finn-b-L12_ALOPECANDRO.vcf.gz",
-                "/home/qrluo/data/data/aga_metabolism/data/raw/AGA/GCST90043616_buildGRCh37.tsv.gz",
-                "/home/qrluo/data/data/aga_metabolism/data/raw/AGA/GCST90043617_buildGRCh37.tsv.gz",
-                "/home/qrluo/data/data/aga_metabolism/data/raw/AGA/GCST90043618_buildGRCh37.tsv.gz",
-                "/home/qrluo/data/data/aga_metabolism/data/raw/AGA/GCST90043619_buildGRCh37.tsv.gz",
-                "/home/qrluo/data/data/aga_metabolism/data/raw/ANX/finn-b-F5_ALLANXIOUS.vcf.gz",
+                "/data/raw/AGA/finn-b-L12_ALOPECANDRO.vcf.gz",
+                "/data/aga_metabolism/data/raw/AGA/GCST90043616_buildGRCh37.tsv.gz",
+                "/data/aga_metabolism/data/raw/AGA/GCST90043617_buildGRCh37.tsv.gz",
+                "/data/aga_metabolism/data/raw/AGA/GCST90043618_buildGRCh37.tsv.gz",
+                "/data/aga_metabolism/data/raw/AGA/GCST90043619_buildGRCh37.tsv.gz",
+                "/data/aga_metabolism/data/raw/ANX/finn-b-F5_ALLANXIOUS.vcf.gz",
             ],
             "N": [119185, 207036, 207036, 207036, 207036, 210623],
         }
