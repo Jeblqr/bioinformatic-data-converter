@@ -7,6 +7,9 @@ __pycache__/
 .Python
 *.so
 test_data/output_*
+geo_test_data/output_test/
+geo_test_data/large_test_file.tsv
+geo_test_data/large_output.tsv
 build/
 dist/
 *.egg-info/
