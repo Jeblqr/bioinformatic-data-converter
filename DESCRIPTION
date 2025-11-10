@@ -1,7 +1,7 @@
 Package: bioconverter
 Type: Package
 Title: Universal Bioinformatics Data Converter for Multi-Omics Formats
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: c(
     person("Bioinformatics Data Converter", "Contributors", 
            email = "contributors@example.com",
