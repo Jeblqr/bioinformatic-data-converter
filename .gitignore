@@ -6,10 +6,9 @@ __pycache__/
 *.pyd
 .Python
 *.so
-test_data/output_*
-geo_test_data/output_test/
-geo_test_data/large_test_file.tsv
-geo_test_data/large_output.tsv
+test_data/
+
+geo_test_data/
 build/
 dist/
 *.egg-info/
@@ -21,3 +20,20 @@ conversion_report_mapping.csv
 .Rhistory
 .RData
 .Ruserdata
+
+## Test artifacts and runtime files
+.pytest_cache/
+test_r_*.R
+test_r_*.Rout
+test_r_functions.R
+test_r_with_env.R
+test_r_simple.R
+test_r_cli.R
+
+# Local Python virtualenv used during development
+.venv/
+
+# Temporary conversion outputs created during tests
+/tmp/r_test_*
+/tmp/test_r_*
+/tmp/test_*

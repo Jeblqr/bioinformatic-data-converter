@@ -7,24 +7,18 @@ from pathlib import Path
 
 # Read the README file
 this_directory = Path(__file__).parent
-long_description = (this_directory / "README.md").read_text(encoding='utf-8')
+long_description = (this_directory / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="bioconverter",
-    version="0.1.0",
+    version="0.1.1",
     author="Bioinformatics Data Converter Contributors",
     author_email="",
     description="Universal bioinformatics data converter for multi-omics data formats",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/Jeblqr/bioinformatic-data-converter",
-    packages=find_packages(exclude=["tests", "test_data"]),
-    py_modules=[
-        "convertor",
-        "interactive_converter",
-        "conversion_report",
-        "cli"
-    ],
+    url="https://github.com/Jeblqr/bioConv",
+    packages=find_packages(exclude=["tests", "test_data", "geo_test_data"]),
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
@@ -53,13 +47,13 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "bioconverter=cli:main",
+            "bioconverter=bioconverter.cli:main",
         ],
     },
     keywords="bioinformatics genomics transcriptomics proteomics metabolomics data-conversion",
     project_urls={
-        "Bug Reports": "https://github.com/Jeblqr/bioinformatic-data-converter/issues",
-        "Source": "https://github.com/Jeblqr/bioinformatic-data-converter",
-        "Documentation": "https://github.com/Jeblqr/bioinformatic-data-converter/blob/main/README.md",
+        "Bug Reports": "https://github.com/Jeblqr/bioConv/issues",
+        "Source": "https://github.com/Jeblqr/bioConv",
+        "Documentation": "https://github.com/Jeblqr/bioConv/blob/main/README.md",
     },
 )

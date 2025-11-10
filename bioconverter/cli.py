@@ -7,13 +7,13 @@ import argparse
 import sys
 from pathlib import Path
 import pandas as pd
-from convertor import (
+from .convertor import (
     convert_single_file,
     detect_file_format,
     standardize_columns,
     read_data,
 )
-from interactive_converter import (
+from .interactive_converter import (
     interactive_column_mapping,
     preview_mapping,
     process_large_file,
@@ -23,7 +23,7 @@ from interactive_converter import (
     auto_detect_omics_type,
     create_omics_column_patterns,
 )
-from conversion_report import ConversionReport
+from .conversion_report import ConversionReport
 
 
 def main():

@@ -1,6 +1,13 @@
-# Bioinformatics Data Converter
+# bioconverter
+
+[![PyPI version](https://img.shields.io/pypi/v/bioconverter.svg)](https://pypi.org/project/bioconverter/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
 A comprehensive and efficient tool for converting various bioinformatics data formats to a unified, standardized format. Designed to handle all types of omics data (genomics, transcriptomics, proteomics, metabolomics) and large files (gigabytes of data).
+
+**PyPI**: https://pypi.org/project/bioconverter/  
+**GitHub**: https://github.com/Jeblqr/bioConv
 
 ## Features
 
@@ -49,50 +56,75 @@ A comprehensive and efficient tool for converting various bioinformatics data fo
 
 ## Installation
 
+### Python Package (Recommended)
+
 ```bash
-# Clone the repository
-git clone https://github.com/Jeblqr/bioinformatic-data-converter.git
-cd bioinformatic-data-converter
+# Install from PyPI
+pip install bioconverter
+
+# Or install from GitHub (latest version)
+pip install git+https://github.com/Jeblqr/bioConv.git
+```
+
+### R Package
+
+```r
+# Install from GitHub
+remotes::install_github("Jeblqr/bioConv")
 
 # Install dependencies
-pip install -r requirements.txt
+install.packages(c("reticulate", "tibble", "readr"))
+
+# Install Python bioconverter package
+reticulate::py_install("bioconverter", pip = TRUE)
+```
+
+### Verify Installation
+
+```bash
+# Python
+python -c "from bioconverter import convertor; print('bioconverter installed!')"
+
+# CLI
+bioconverter --help
+```
+
+```r
+# R
+library(bioconverter)
 ```
 
 ## Quick Start
 
-### Command-Line Interface
+### Command-Line Interface (CLI)
 
 ```bash
 # Show file information only
-python3 cli.py -i input_data.tsv --info-only
+bioconverter -i input_data.tsv --info-only
 
-# Convert with auto-suggested mappings
-python3 cli.py -i input_data.tsv -o output_data.tsv --auto-suggest
+# Convert with auto-suggested mappings (recommended)
+bioconverter -i input_data.tsv -o output_data.tsv --auto-suggest
 
 # Interactive column mapping
-python3 cli.py -i input_data.csv -o output_data.tsv --interactive
-
-# Batch interactive mode
-python3 cli.py -i input_data.txt -o output_data.tsv --batch-interactive
+bioconverter -i input_data.csv -o output_data.tsv --interactive
 
 # Manual column mapping
-python3 cli.py -i input.txt -o output.tsv --map "CHR=chr,POS=pos,P_VALUE=pval"
+bioconverter -i input.txt -o output.tsv --map "CHR=chr,POS=pos,P_VALUE=pval"
 
-# Process large file with chunking
-python3 cli.py -i large_file.tsv.gz -o output.tsv --chunk-size 100000
+# Process large file with automatic chunking
+bioconverter -i large_file.tsv.gz -o output.tsv --auto-suggest
 
 # Show all supported column patterns
-python3 cli.py --show-patterns
+bioconverter --show-patterns
 ```
 
 ### Python API
 
 ```python
-from convertor import convert_single_file
-from interactive_converter import (
-    interactive_column_mapping,
-    process_large_file,
-    auto_suggest_mapping
+from bioconverter.convertor import convert_single_file
+from bioconverter.interactive_converter import (
+    auto_suggest_mapping,
+    process_large_file
 )
 
 # Simple conversion with auto-detection
@@ -101,11 +133,17 @@ result = convert_single_file(
     verbose=True
 )
 
-# Interactive column mapping
+# Auto-suggest mapping
 import pandas as pd
 df = pd.read_csv("input_data.csv", nrows=1000)
-suggested = auto_suggest_mapping(df)
-mapping = interactive_column_mapping(df, suggested_mapping=suggested)
+mapping = auto_suggest_mapping(df)
+
+# Apply mapping and convert
+result = convert_single_file(
+    filename="input_data.csv",
+    column_mapping=mapping,
+    verbose=True
+)
 
 # Process large file efficiently
 process_large_file(
@@ -114,6 +152,29 @@ process_large_file(
     column_mapping=mapping,
     chunksize=100000,
     verbose=True
+)
+```
+
+### R Interface
+
+```r
+library(bioconverter)
+
+# Basic conversion
+result <- convert_file(
+  input_file = "input_data.tsv",
+  output_file = "output_data.tsv",
+  verbose = TRUE
+)
+
+# Auto-suggest mapping
+suggestions <- auto_suggest_mapping("input_data.tsv", n_rows = 1000)
+
+# Apply suggested mapping
+result <- convert_file(
+  input_file = "input_data.tsv",
+  output_file = "output_data.tsv",
+  column_mapping = suggestions
 )
 ```
 
@@ -130,7 +191,7 @@ CHR  POS      SNP        A1  A2  BETA    SE      P
 
 Convert:
 ```bash
-python3 cli.py -i gwas_data.tsv -o standardized_gwas.tsv --auto-suggest
+bioconverter -i gwas_data.tsv -o standardized_gwas.tsv --auto-suggest
 ```
 
 Output `standardized_gwas.tsv.gz`:
@@ -143,20 +204,20 @@ chr  pos      rsid       alt  ref  beta    se      pval
 ### Example 2: Transcriptomics RNA-seq Data
 
 ```bash
-python3 cli.py -i rnaseq_results.csv -o standardized_rnaseq.tsv --auto-suggest --verbose
+bioconverter -i rnaseq_results.csv -o standardized_rnaseq.tsv --auto-suggest --verbose
 ```
 
 ### Example 3: Large File Processing
 
 ```bash
 # File is 5GB - automatically uses chunked processing
-python3 cli.py -i huge_dataset.tsv.gz -o output.tsv --auto-suggest --verbose
+bioconverter -i huge_dataset.tsv.gz -o output.tsv --auto-suggest --verbose
 ```
 
 ### Example 4: Interactive Mapping
 
 ```bash
-python3 cli.py -i custom_format.txt -o output.tsv --interactive
+bioconverter -i custom_format.txt -o output.tsv --interactive
 ```
 
 This will prompt you for each column:
@@ -230,7 +291,7 @@ P-value -> pval
 
 ```python
 import re
-from interactive_converter import create_omics_column_patterns
+from bioconverter.convertor import convert_single_file
 
 # Add custom patterns
 custom_patterns = {
@@ -247,7 +308,8 @@ result = convert_single_file(
 ### Batch Processing Multiple Files
 
 ```python
-from convertor import convert_multiple_files
+from bioconverter.convertor import convert_multiple_files
+import pandas as pd
 
 files = ['file1.tsv', 'file2.csv', 'file3.vcf.gz']
 results = convert_multiple_files(
@@ -257,14 +319,13 @@ results = convert_multiple_files(
 )
 
 # Combine results
-import pandas as pd
 combined = pd.concat(results.values(), ignore_index=True)
 ```
 
 ### Memory-Efficient Processing
 
 ```python
-from interactive_converter import suggest_chunk_size, process_large_file
+from bioconverter.interactive_converter import suggest_chunk_size, process_large_file
 
 # Automatically determine chunk size
 chunk_size = suggest_chunk_size("huge_file.tsv", available_memory_gb=8.0)
@@ -292,15 +353,35 @@ process_large_file(
 - **Parquet** (columnar format)
 - **Compression**: gzip by default (can be disabled with `--no-compression`)
 
+## Complete Examples
+
+See the `examples/` directory for complete working examples:
+
+- **Python**: `examples/example_python.py` - Comprehensive Python API examples
+- **R**: `examples/example_r.R` - Complete R interface examples  
+- **Bash/CLI**: `examples/example_bash.sh` - Shell scripting examples
+
+Run them:
+```bash
+# Python
+python examples/example_python.py
+
+# R
+Rscript examples/example_r.R
+
+# Bash
+bash examples/example_bash.sh
+```
+
 ## CLI Reference
 
 ```
-usage: cli.py [-h] -i INPUT [-o OUTPUT] [--sep SEP]
-              [--compression {gzip,bz2,zip,xz}] [--comment COMMENT] [--vcf]
-              [--interactive | --batch-interactive | --auto-suggest | --map MAP]
-              [--chunk-size CHUNK_SIZE] [--memory MEMORY] [--keep-unmatched]
-              [--output-format {csv,tsv,parquet}] [--no-compression]
-              [--info-only] [--preview PREVIEW] [--verbose] [--show-patterns]
+usage: bioconverter [-h] -i INPUT [-o OUTPUT] [--sep SEP]
+                    [--compression {gzip,bz2,zip,xz}] [--comment COMMENT] [--vcf]
+                    [--interactive | --batch-interactive | --auto-suggest | --map MAP]
+                    [--chunk-size CHUNK_SIZE] [--memory MEMORY] [--keep-unmatched]
+                    [--output-format {csv,tsv,parquet}] [--no-compression]
+                    [--info-only] [--preview PREVIEW] [--verbose] [--show-patterns]
 
 Options:
   -i INPUT, --input INPUT       Input file path
@@ -310,7 +391,7 @@ Options:
   --vcf                         Treat as VCF format
   --interactive                 Interactive column mapping
   --batch-interactive           Batch interactive mode
-  --auto-suggest                Use auto-suggested mappings
+  --auto-suggest                Use auto-suggested mappings (recommended)
   --map MAP                     Manual mapping (e.g., "old1=new1,old2=new2")
   --chunk-size CHUNK_SIZE       Chunk size for large files
   --memory MEMORY               Available memory in GB
@@ -331,10 +412,42 @@ Options:
 
 Memory usage is optimized to stay under 4GB by default (configurable).
 
+## Documentation
+
+- **Complete Usage Guide**: [USAGE.md](USAGE.md) - Detailed documentation with examples
+- **PyPI Package**: https://pypi.org/project/bioconverter/
+- **GitHub Repository**: https://github.com/Jeblqr/bioConv
+- **Issue Tracker**: https://github.com/Jeblqr/bioConv/issues
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit issues or pull requests.
 
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## Citation
+
+If you use bioconverter in your research, please cite:
+
+```bibtex
+@software{bioconverter2025,
+  title = {bioconverter: Universal Bioinformatics Data Converter},
+  author = {Bioinformatics Data Converter Contributors},
+  year = {2025},
+  url = {https://github.com/Jeblqr/bioConv},
+  version = {0.1.1}
+}
+```
+
 ## License
 
-This project is open source and available for use in bioinformatics research and applications.
+MIT License - Free for academic research and commercial applications.
+
+## Support
+
+- **Issues**: https://github.com/Jeblqr/bioConv/issues
+- **Discussions**: https://github.com/Jeblqr/bioConv/discussions

@@ -29,9 +29,9 @@ NULL
     }
     
     # Import Python modules
-    .convertor <<- reticulate::import("convertor", delay_load = TRUE)
-    .interactive_converter <<- reticulate::import("interactive_converter", delay_load = TRUE)
-    .conversion_report <<- reticulate::import("conversion_report", delay_load = TRUE)
+    .convertor <<- reticulate::import("bioconverter.convertor", delay_load = TRUE)
+    .interactive_converter <<- reticulate::import("bioconverter.interactive_converter", delay_load = TRUE)
+    .conversion_report <<- reticulate::import("bioconverter.conversion_report", delay_load = TRUE)
   }
 }
 
