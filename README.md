@@ -12,12 +12,14 @@ A comprehensive and efficient tool for converting various bioinformatics data fo
 ## Features
 
 ### 🔄 Universal Data Format Conversion
+
 - **Multi-omics Support**: Genomics, transcriptomics, proteomics, and metabolomics data
 - **Format Detection**: Automatic detection of file formats (CSV, TSV, VCF, compressed files)
 - **Intelligent Mapping**: Auto-detection and mapping of column names to standardized format
 - **Flexible Input**: Supports various separators, compression formats (gzip, bz2, zip, xz), and comment characters
 
 ### 💡 Interactive Column Renaming
+
 - **Interactive Mode**: Step-by-step column mapping with suggestions
 - **Batch Interactive Mode**: Enter all mappings at once
 - **Auto-Suggest Mode**: Fully automated column mapping based on recognized patterns
@@ -25,6 +27,7 @@ A comprehensive and efficient tool for converting various bioinformatics data fo
 - **Preview & Confirm**: Review mappings before processing
 
 ### 🚀 Large File Handling
+
 - **Chunked Processing**: Efficiently processes gigabyte-sized files
 - **Memory Management**: Automatic chunk size suggestion based on file size
 - **Streaming Output**: Writes output incrementally to avoid memory issues
@@ -33,23 +36,27 @@ A comprehensive and efficient tool for converting various bioinformatics data fo
 ### 📊 Supported Data Types
 
 #### Genomics
+
 - GWAS summary statistics
 - VCF files (variant call format)
 - SNP data
 - Association study results
 
 #### Transcriptomics
+
 - RNA-seq count data
 - FPKM/TPM expression values
 - Differential expression results
 - Gene expression matrices
 
 #### Proteomics
+
 - Protein abundance data
 - Peptide intensity measurements
 - Quantitative proteomics results
 
 #### Metabolomics
+
 - Metabolite concentrations
 - LC-MS/GC-MS peak data
 - Metabolite identification results
@@ -183,6 +190,7 @@ result <- convert_file(
 ### Example 1: Genomics GWAS Data
 
 Input file `gwas_data.tsv`:
+
 ```
 CHR  POS      SNP        A1  A2  BETA    SE      P
 1    10001    rs123456   A   G   0.05    0.02    0.001
@@ -190,11 +198,13 @@ CHR  POS      SNP        A1  A2  BETA    SE      P
 ```
 
 Convert:
+
 ```bash
 bioconverter -i gwas_data.tsv -o standardized_gwas.tsv --auto-suggest
 ```
 
 Output `standardized_gwas.tsv.gz`:
+
 ```
 chr  pos      rsid       alt  ref  beta    se      pval
 1    10001    rs123456   A    G    0.05    0.02    0.001
@@ -221,6 +231,7 @@ bioconverter -i custom_format.txt -o output.tsv --interactive
 ```
 
 This will prompt you for each column:
+
 ```
 Original columns found:
   1. Chromosome [identifier]
@@ -238,6 +249,7 @@ P-value -> pval
 ## Standardized Column Names
 
 ### Genomics Fields
+
 - `chr`: Chromosome
 - `pos`: Position
 - `rsid`: SNP/variant identifier
@@ -252,6 +264,7 @@ P-value -> pval
 - `info`: Imputation quality
 
 ### Transcriptomics Fields
+
 - `gene_id`: Gene identifier (e.g., ENSG)
 - `gene_name`: Gene symbol
 - `transcript_id`: Transcript identifier
@@ -263,6 +276,7 @@ P-value -> pval
 - `padj`: Adjusted p-value
 
 ### Proteomics Fields
+
 - `protein_id`: Protein identifier
 - `protein_name`: Protein name
 - `peptide`: Peptide sequence
@@ -271,6 +285,7 @@ P-value -> pval
 - `ratio`: Fold change ratio
 
 ### Metabolomics Fields
+
 - `metabolite_id`: Metabolite identifier
 - `metabolite_name`: Metabolite name
 - `mz`: Mass-to-charge ratio
@@ -279,6 +294,7 @@ P-value -> pval
 - `peak_area`: Peak area
 
 ### Sample Information
+
 - `sample_id`: Sample identifier
 - `condition`: Experimental condition
 - `timepoint`: Time point
@@ -342,12 +358,14 @@ process_large_file(
 ## File Format Support
 
 ### Input Formats
+
 - **Plain text**: `.txt`, `.tsv`, `.csv`
 - **Compressed**: `.gz`, `.bz2`, `.zip`, `.xz`
 - **Specialized**: `.vcf`, `.vcf.gz`
 - **Auto-detection**: Format automatically detected from extension
 
 ### Output Formats
+
 - **TSV** (tab-separated, default)
 - **CSV** (comma-separated)
 - **Parquet** (columnar format)
@@ -358,10 +376,11 @@ process_large_file(
 See the `examples/` directory for complete working examples:
 
 - **Python**: `examples/example_python.py` - Comprehensive Python API examples
-- **R**: `examples/example_r.R` - Complete R interface examples  
+- **R**: `examples/example_r.R` - Complete R interface examples
 - **Bash/CLI**: `examples/example_bash.sh` - Shell scripting examples
 
 Run them:
+
 ```bash
 # Python
 python examples/example_python.py
