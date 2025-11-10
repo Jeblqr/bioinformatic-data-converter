@@ -11,7 +11,9 @@ build/
 dist/
 *.egg-info/
 .eggs/
-conversion_report.*
+conversion_report.txt
+conversion_report.json
+conversion_report_mapping.csv
 .Rproj.user
 .Rhistory
 .RData
