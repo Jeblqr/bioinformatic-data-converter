@@ -7,3 +7,12 @@ __pycache__/
 .Python
 *.so
 test_data/output_*
+build/
+dist/
+*.egg-info/
+.eggs/
+conversion_report.*
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata

@@ -23,6 +23,7 @@ from interactive_converter import (
     auto_detect_omics_type,
     create_omics_column_patterns,
 )
+from conversion_report import ConversionReport
 
 
 def main():
@@ -158,6 +159,24 @@ Supported data types:
         "--show-patterns",
         action='store_true',
         help="Show all supported column name patterns and exit"
+    )
+    
+    # Report generation
+    parser.add_argument(
+        "--generate-report",
+        action='store_true',
+        default=True,
+        help="Generate conversion report (default: True)"
+    )
+    parser.add_argument(
+        "--no-report",
+        dest='generate_report',
+        action='store_false',
+        help="Don't generate conversion report"
+    )
+    parser.add_argument(
+        "--report-dir",
+        help="Directory for conversion reports (default: same as output)"
     )
     
     args = parser.parse_args()
@@ -375,6 +394,39 @@ Supported data types:
                 result_df.to_csv(args.output, sep='\t', index=False, compression=output_compression)
             
             print(f"\nOutput saved to: {args.output}")
+        
+        # Generate conversion report
+        if args.generate_report:
+            report_dir = args.report_dir or Path(args.output).parent
+            
+            # Create report
+            report = ConversionReport()
+            report.set_input_info(
+                filename=args.input,
+                columns=sample_df.columns.tolist(),
+                rows=len(df) if not chunk_size else None,
+                file_size_mb=file_size_gb * 1024,
+                omics_type=omics_type
+            )
+            
+            report.set_output_info(
+                filename=args.output,
+                columns=list(column_mapping.values()) if not args.keep_unmatched else result_df.columns.tolist() if not chunk_size else list(column_mapping.values())
+            )
+            
+            # Get unmapped columns
+            unmapped = [col for col in sample_df.columns if col not in column_mapping]
+            report.set_column_mapping(column_mapping, unmapped)
+            
+            # Set processing info
+            if chunk_size:
+                report.set_processing_info(method="chunked", chunk_size=chunk_size)
+            else:
+                report.set_processing_info(method="in-memory")
+            
+            # Save reports
+            report.save_report(str(report_dir), "conversion_report")
+            report.print_summary()
         
         print("\n" + "="*80)
         print("CONVERSION COMPLETE")
