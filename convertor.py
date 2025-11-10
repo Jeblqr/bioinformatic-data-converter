@@ -98,11 +98,12 @@ def create_genetic_column_patterns() -> Dict[str, re.Pattern]:
         字典，键为标准字段名，值为对应的正则表达式模式
     """
     patterns = {
+        # Genomics
         "chr": re.compile(
-            r"^(chr|chromosome|chrom|#?chr|#?chrom|#?CHROM)$", re.IGNORECASE
+            r"^(chr|chromosome|chrom|#?chr|#?chrom|#?CHROM|seqname)$", re.IGNORECASE
         ),
         "pos": re.compile(
-            r"^(pos|position|bp|base_pair|base_position|ps|POS)$", re.IGNORECASE
+            r"^(pos|position|bp|base_pair|base_position|ps|POS|start|end)$", re.IGNORECASE
         ),
         "a1": re.compile(
             r"^(a1|allele1|allele_1|effect_allele|ea|alt|alt_allele|ALT)$",
@@ -113,7 +114,7 @@ def create_genetic_column_patterns() -> Dict[str, re.Pattern]:
             re.IGNORECASE,
         ),
         "n": re.compile(
-            r"^(n|n_samples|sample_size|nsize|ns|n_total|ntotal)$", re.IGNORECASE
+            r"^(n|n_samples|sample_size|nsize|ns|n_total|ntotal|N)$", re.IGNORECASE
         ),
         "frq": re.compile(
             r"^(frq|freq|frequency|maf|af|eaf|allele_freq|allele_frequency|a1_freq|effect_allele_freq|AF)$",
@@ -123,7 +124,7 @@ def create_genetic_column_patterns() -> Dict[str, re.Pattern]:
             r"^(info|imputation_quality|impquality|r2|rsq|INFO)$", re.IGNORECASE
         ),
         "beta": re.compile(
-            r"^(beta|b|effect|coef|coefficient|effect_size|BETA)$", re.IGNORECASE
+            r"^(beta|b|effect|coef|coefficient|effect_size|BETA|slope)$", re.IGNORECASE
         ),
         "or": re.compile(r"^(or|odds_ratio|oddsratio|OR)$", re.IGNORECASE),
         "z": re.compile(r"^(z|zscore|z_score|zstat|z_statistic)$", re.IGNORECASE),
@@ -132,11 +133,45 @@ def create_genetic_column_patterns() -> Dict[str, re.Pattern]:
             re.IGNORECASE,
         ),
         "pval": re.compile(
-            r"^(p|pval|p_value|pvalue|p-value|p.value|sig|pval_nominal)$", re.IGNORECASE
+            r"^(p|pval|p_value|pvalue|p-value|p.value|sig|pval_nominal|P)$", re.IGNORECASE
         ),
         "se": re.compile(
             r"^(se|stderr|standard_error|std_err|std_error|SE)$", re.IGNORECASE
         ),
+        
+        # Transcriptomics
+        "gene_id": re.compile(r"^(gene_id|geneid|ensembl_id|ensembl|ensg)$", re.IGNORECASE),
+        "gene_name": re.compile(r"^(gene_name|genename|gene_symbol|symbol|gene)$", re.IGNORECASE),
+        "transcript_id": re.compile(r"^(transcript_id|transcriptid|enst)$", re.IGNORECASE),
+        "expression": re.compile(r"^(expression|expr|value)$", re.IGNORECASE),
+        "fpkm": re.compile(r"^(fpkm|rpkm)$", re.IGNORECASE),
+        "tpm": re.compile(r"^(tpm|transcripts_per_million)$", re.IGNORECASE),
+        "counts": re.compile(r"^(counts|read_count|reads)$", re.IGNORECASE),
+        "log2fc": re.compile(r"^(log2fc|log2_fold_change|log2foldchange|lfc)$", re.IGNORECASE),
+        "padj": re.compile(r"^(padj|adj_pval|adjusted_pvalue|fdr|qval|q_value)$", re.IGNORECASE),
+        
+        # Proteomics
+        "protein_id": re.compile(r"^(protein_id|proteinid|uniprot|uniprot_id)$", re.IGNORECASE),
+        "protein_name": re.compile(r"^(protein_name|proteinname|protein)$", re.IGNORECASE),
+        "peptide": re.compile(r"^(peptide|peptide_sequence|sequence)$", re.IGNORECASE),
+        "abundance": re.compile(r"^(abundance|protein_abundance)$", re.IGNORECASE),
+        "intensity": re.compile(r"^(intensity|signal|signal_intensity)$", re.IGNORECASE),
+        "ratio": re.compile(r"^(ratio|fold_change|fc)$", re.IGNORECASE),
+        
+        # Metabolomics
+        "metabolite_id": re.compile(r"^(metabolite_id|metaboliteid|compound_id|hmdb|hmdb_id)$", re.IGNORECASE),
+        "metabolite_name": re.compile(r"^(metabolite_name|metabolite|compound|compound_name)$", re.IGNORECASE),
+        "mz": re.compile(r"^(mz|m/z|mass|mass_to_charge)$", re.IGNORECASE),
+        "rt": re.compile(r"^(rt|retention_time|retentiontime)$", re.IGNORECASE),
+        "concentration": re.compile(r"^(concentration|conc|amount)$", re.IGNORECASE),
+        "peak_area": re.compile(r"^(peak_area|area|peak_intensity)$", re.IGNORECASE),
+        
+        # Sample information
+        "sample_id": re.compile(r"^(sample_id|sampleid|sample|sample_name)$", re.IGNORECASE),
+        "condition": re.compile(r"^(condition|group|treatment|class)$", re.IGNORECASE),
+        "timepoint": re.compile(r"^(timepoint|time|time_point)$", re.IGNORECASE),
+        "replicate": re.compile(r"^(replicate|rep|biological_replicate)$", re.IGNORECASE),
+        "batch": re.compile(r"^(batch|batch_id)$", re.IGNORECASE),
     }
     return patterns
 

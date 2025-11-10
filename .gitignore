@@ -1,2 +1,9 @@
 .DS_Store
 *tmp*
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+test_data/output_*
