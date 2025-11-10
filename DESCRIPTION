@@ -1,0 +1,33 @@
+Package: bioconverter
+Type: Package
+Title: Universal Bioinformatics Data Converter for Multi-Omics Formats
+Version: 0.1.0
+Authors@R: c(
+    person("Bioinformatics Data Converter", "Contributors", 
+           email = "contributors@example.com",
+           role = c("aut", "cre"))
+    )
+Description: A comprehensive toolkit for converting various bioinformatics 
+    data formats to unified standard formats. Supports genomics (GWAS, VCF),
+    transcriptomics (RNA-seq), proteomics, and metabolomics data. Features
+    interactive column mapping, automatic format detection, and efficient 
+    processing of gigabyte-scale files through chunking.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends:
+    R (>= 3.6.0)
+Imports:
+    reticulate (>= 1.20),
+    readr (>= 2.0.0),
+    dplyr (>= 1.0.0),
+    tibble (>= 3.0.0),
+    jsonlite (>= 1.7.0)
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+RoxygenNote: 7.2.0
+VignetteBuilder: knitr
+URL: https://github.com/Jeblqr/bioinformatic-data-converter
+BugReports: https://github.com/Jeblqr/bioinformatic-data-converter/issues
