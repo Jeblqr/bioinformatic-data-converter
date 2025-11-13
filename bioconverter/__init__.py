@@ -6,7 +6,7 @@ to unified standard formats. Supports genomics (GWAS, VCF), transcriptomics
 (RNA-seq), proteomics, and metabolomics data.
 """
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 # Import main modules for easier access
 from .convertor import (
