@@ -8,10 +8,8 @@
 #' @name bioconverter
 NULL
 
-# Module-level variable to store Python module
-.convertor <- NULL
-.interactive_converter <- NULL
-.conversion_report <- NULL
+# Environment to store Python modules (avoids locked binding issues)
+.python_modules <- new.env(parent = emptyenv())
 
 #' Initialize bioconverter Python modules
 #'
@@ -22,16 +20,16 @@ NULL
 #' @return NULL (called for side effects)
 #' @keywords internal
 .init_python_modules <- function() {
-  if (is.null(.convertor)) {
+  if (is.null(.python_modules$convertor)) {
     # Check if reticulate is available
     if (!requireNamespace("reticulate", quietly = TRUE)) {
       stop("Package 'reticulate' is required but not installed.")
     }
     
     # Import Python modules
-    .convertor <<- reticulate::import("bioconverter.convertor", delay_load = TRUE)
-    .interactive_converter <<- reticulate::import("bioconverter.interactive_converter", delay_load = TRUE)
-    .conversion_report <<- reticulate::import("bioconverter.conversion_report", delay_load = TRUE)
+    .python_modules$convertor <- reticulate::import("bioconverter.convertor", delay_load = TRUE)
+    .python_modules$interactive_converter <- reticulate::import("bioconverter.interactive_converter", delay_load = TRUE)
+    .python_modules$conversion_report <- reticulate::import("bioconverter.conversion_report", delay_load = TRUE)
   }
 }
 
@@ -87,7 +85,7 @@ convert_file <- function(input_file,
   }
   
   # Call Python conversion function
-  result_df <- .convertor$convert_single_file(
+  result_df <- .python_modules$convertor$convert_single_file(
     filename = input_file,
     column_mapping = py_mapping,
     keep_unmatched = keep_unmatched,
@@ -145,7 +143,7 @@ convert_file <- function(input_file,
 get_column_patterns <- function() {
   .init_python_modules()
   
-  patterns <- .interactive_converter$create_omics_column_patterns()
+  patterns <- .python_modules$interactive_converter$create_omics_column_patterns()
   
   # Convert to R list with readable format
   pattern_list <- list(
@@ -186,7 +184,7 @@ auto_suggest_mapping <- function(input_file, n_rows = 1000) {
   py_df <- reticulate::r_to_py(sample_df)
   
   # Get suggestions
-  suggestions <- .interactive_converter$auto_suggest_mapping(py_df)
+  suggestions <- .python_modules$interactive_converter$auto_suggest_mapping(py_df)
   
   # Convert to R list
   return(as.list(suggestions))
@@ -218,7 +216,7 @@ generate_conversion_report <- function(input_file,
   .init_python_modules()
   
   # Create report object
-  report <- .conversion_report$ConversionReport()
+  report <- .python_modules$conversion_report$ConversionReport()
   
   # Set information
   file_size_mb <- file.info(input_file)$size / (1024^2)
