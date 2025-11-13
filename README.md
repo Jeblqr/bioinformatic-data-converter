@@ -63,7 +63,9 @@ A comprehensive and efficient tool for converting various bioinformatics data fo
 
 ## Installation
 
-### Python Package (Recommended)
+### Python Package
+
+The Python package is a native implementation with no dependencies on R.
 
 ```bash
 # Install from PyPI
@@ -75,16 +77,17 @@ pip install git+https://github.com/Jeblqr/bioConv.git
 
 ### R Package
 
+The R package is a native implementation with no dependencies on Python.
+
 ```r
 # Install from GitHub
 remotes::install_github("Jeblqr/bioConv")
 
-# Install dependencies
-install.packages(c("reticulate", "tibble", "readr"))
-
-# Install Python bioconverter package
-reticulate::py_install("bioconverter", pip = TRUE)
+# Install dependencies (only R packages)
+install.packages("readr")
 ```
+
+**Note:** The R and Python packages are now independent implementations with consistent logic. You can use either one without installing the other.
 
 ### Verify Installation
 
