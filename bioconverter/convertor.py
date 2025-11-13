@@ -103,7 +103,7 @@ def create_genetic_column_patterns() -> Dict[str, re.Pattern]:
             r"^(chr|chromosome|chrom|#?chr|#?chrom|#?CHROM|seqname)$", re.IGNORECASE
         ),
         "pos": re.compile(
-            r"^(pos|position|bp|base_pair|base_position|ps|POS|start|end)$", re.IGNORECASE
+            r"^(pos|position|bp|base_pair|base_position|base_pair_location|ps|POS|start|end)$", re.IGNORECASE
         ),
         "a1": re.compile(
             r"^(a1|allele1|allele_1|effect_allele|ea|alt|alt_allele|ALT)$",
@@ -117,7 +117,7 @@ def create_genetic_column_patterns() -> Dict[str, re.Pattern]:
             r"^(n|n_samples|sample_size|nsize|ns|n_total|ntotal|N)$", re.IGNORECASE
         ),
         "frq": re.compile(
-            r"^(frq|freq|frequency|maf|af|eaf|allele_freq|allele_frequency|a1_freq|effect_allele_freq|AF)$",
+            r"^(frq|freq|frequency|maf|af|eaf|allele_freq|allele_frequency|a1_freq|effect_allele_freq|effect_allele_frequency|AF)$",
             re.IGNORECASE,
         ),
         "info": re.compile(
@@ -133,7 +133,7 @@ def create_genetic_column_patterns() -> Dict[str, re.Pattern]:
             re.IGNORECASE,
         ),
         "pval": re.compile(
-            r"^(p|pval|p_value|pvalue|p-value|p.value|sig|pval_nominal|P)$", re.IGNORECASE
+            r"^(p|pval|p_value|pvalue|p-value|p.value|sig|pval_nominal|p_nospa|P)$", re.IGNORECASE
         ),
         "se": re.compile(
             r"^(se|stderr|standard_error|std_err|std_error|SE)$", re.IGNORECASE
