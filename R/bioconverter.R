@@ -21,7 +21,7 @@ NULL
 #' @param output_file Character. Path to output file (optional)
 #' @param auto_suggest Logical. Use automatic column mapping suggestions (default: TRUE)
 #' @param column_mapping Named list. Manual column mapping (original_name = "standard_name")
-#' @param keep_unmatched Logical. Keep columns that don't match standard patterns (default: FALSE)
+#' @param keep_unmatched Logical. Keep columns that don't match standard patterns (default: TRUE)
 #' @param verbose Logical. Print detailed information (default: TRUE)
 #'
 #' @return A data frame containing the converted data
@@ -53,7 +53,7 @@ convert_file <- function(input_file,
                         output_file = NULL,
                         auto_suggest = TRUE,
                         column_mapping = NULL,
-                        keep_unmatched = FALSE,
+                        keep_unmatched = TRUE,
                         verbose = TRUE) {
   
   # Auto-suggest mapping if requested and no manual mapping provided

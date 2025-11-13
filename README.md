@@ -8,6 +8,7 @@
 A comprehensive and efficient tool for converting various bioinformatics data formats to a unified, standardized format. Designed to handle all types of omics data (genomics, transcriptomics, proteomics, metabolomics) and large files (gigabytes of data).
 
 **Available in two independent implementations:**
+
 - **Python Package**: Native Python implementation (PyPI: https://pypi.org/project/bioconverter/)
 - **R Package**: Native R implementation (no Python dependency required)
 

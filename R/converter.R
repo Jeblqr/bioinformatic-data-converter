@@ -6,14 +6,14 @@
 #' @param df Data frame. Input data
 #' @param column_mapping Named list. Manual column name mapping (original = standard)
 #' @param custom_patterns Named list. Custom regex patterns
-#' @param keep_unmatched Logical. Keep columns that don't match (default: FALSE)
+#' @param keep_unmatched Logical. Keep columns that don't match (default: TRUE)
 #'
 #' @return Data frame with standardized column names
 #'
 #' @keywords internal
 standardize_columns <- function(df, column_mapping = NULL, 
                                custom_patterns = NULL, 
-                               keep_unmatched = FALSE) {
+                               keep_unmatched = TRUE) {
   # Start with an empty list to collect columns
   result_cols <- list()
   
@@ -37,11 +37,15 @@ standardize_columns <- function(df, column_mapping = NULL,
       std_col <- col_matches[[original_col]]
       
       if (!is.null(std_col)) {
-        # Avoid duplicate columns
+        # If standard name already exists, keep original name to avoid data loss
         if (!(std_col %in% names(result_cols))) {
           result_cols[[std_col]] <- df[[original_col]]
+        } else {
+          # Standard name exists, use original column name instead
+          result_cols[[original_col]] <- df[[original_col]]
         }
       } else if (keep_unmatched) {
+        # Unmatched columns keep original name
         result_cols[[original_col]] <- df[[original_col]]
       }
     }
@@ -69,7 +73,7 @@ standardize_columns <- function(df, column_mapping = NULL,
 #' @param comment Character. Comment character (NULL for auto-detect)
 #' @param column_mapping Named list. Manual column mapping
 #' @param custom_patterns Named list. Custom regex patterns
-#' @param keep_unmatched Logical. Keep unmapped columns (default: FALSE)
+#' @param keep_unmatched Logical. Keep unmapped columns (default: TRUE)
 #' @param verbose Logical. Print detailed information (default: TRUE)
 #'
 #' @return Data frame with standardized columns
@@ -93,7 +97,7 @@ convert_single_file <- function(filename,
                                 comment = NULL,
                                 column_mapping = NULL,
                                 custom_patterns = NULL,
-                                keep_unmatched = FALSE,
+                                keep_unmatched = TRUE,
                                 verbose = TRUE) {
   if (verbose) {
     cat(sprintf("\nProcessing file: %s\n", filename))
@@ -151,7 +155,7 @@ convert_single_file <- function(filename,
 #' Batch convert multiple bioinformatics data files.
 #'
 #' @param file_list Character vector. Paths to input files
-#' @param keep_unmatched Logical. Keep unmapped columns (default: FALSE)
+#' @param keep_unmatched Logical. Keep unmapped columns (default: TRUE)
 #' @param verbose Logical. Print detailed information (default: TRUE)
 #'
 #' @return Named list of data frames
@@ -164,7 +168,7 @@ convert_single_file <- function(filename,
 #'
 #' @export
 convert_multiple_files <- function(file_list, 
-                                   keep_unmatched = FALSE, 
+                                   keep_unmatched = TRUE, 
                                    verbose = TRUE) {
   results <- list()
   

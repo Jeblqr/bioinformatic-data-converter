@@ -15,20 +15,34 @@
 #' @export
 create_column_patterns <- function() {
   list(
-    # Genomics
-    chr = "^(chr|chromosome|chrom|#?chr|#?chrom|#?CHROM|seqname)$",
-    pos = "^(pos|position|bp|base_pair|base_position|ps|POS|start|end)$",
-    a1 = "^(a1|allele1|allele_1|effect_allele|ea|alt|alt_allele|ALT)$",
-    a2 = "^(a2|allele2|allele_2|other_allele|oa|ref|ref_allele|reference_allele|REF)$",
-    n = "^(n|n_samples|sample_size|nsize|ns|n_total|ntotal|N)$",
-    frq = "^(frq|freq|frequency|maf|af|eaf|allele_freq|allele_frequency|a1_freq|effect_allele_freq|AF)$",
+    # Genomics - 扩展匹配模式
+    chr = "^(chr|chromosome|chrom|#?chr|#?chrom|#?CHROM|seqname|CHR|CHROMOSOME)$",
+    pos = "^(pos|position|bp|base_pair|base_position|base_pair_location|ps|POS|start|end|BP|POSITION)$",
+    a1 = "^(a1|allele1|allele_1|effect_allele|ea|alt|alt_allele|ALT|A1|EFFECT_ALLELE|effectAllele)$",
+    a2 = "^(a2|allele2|allele_2|other_allele|oa|ref|ref_allele|reference_allele|REF|A2|OTHER_ALLELE|otherAllele)$",
+    n = "^(n|n_samples|sample_size|nsize|ns|n_total|ntotal|N|NSIZE|sampleSize)$",
+    frq = "^(frq|freq|frequency|maf|af|eaf|allele_freq|allele_frequency|a1_freq|effect_allele_freq|effect_allele_frequency|AF|FRQ|FREQ|MAF|EAF)$",
     info = "^(info|imputation_quality|impquality|r2|rsq|INFO)$",
-    beta = "^(beta|b|effect|coef|coefficient|effect_size|BETA|slope)$",
-    or = "^(or|odds_ratio|oddsratio|OR)$",
-    z = "^(z|zscore|z_score|zstat|z_statistic)$",
-    rsid = "^(rsid|snp|snpid|snp_id|variant_id|varid|id|marker|markername|rs|ID)$",
-    pval = "^(p|pval|p_value|pvalue|p-value|p\\.value|sig|pval_nominal|P)$",
-    se = "^(se|stderr|standard_error|std_err|std_error|SE)$",
+    beta = "^(beta|b|effect|coef|coefficient|effect_size|BETA|slope|EFFECT)$",
+    or = "^(or|odds_ratio|oddsratio|OR|ODDS_RATIO)$",
+    z = "^(z|zscore|z_score|zstat|z_statistic|Z|ZSCORE)$",
+    rsid = "^(rsid|snp|snpid|snp_id|variant_id|varid|id|marker|markername|rs|ID|RSID|SNP|VARIANT_ID|variantId)$",
+    pval = "^(p|pval|p_value|pvalue|p-value|p\\.value|sig|pval_nominal|p_nospa|P|PVAL|P_VALUE|PVALUE|P_noSPA)$",
+    se = "^(se|stderr|standard_error|std_err|std_error|SE|SE_T|STDERR|standardError)$",
+    
+    # VCF specific
+    qual = "^(qual|quality|QUAL)$",
+    filter = "^(filter|FILTER)$",
+    format = "^(format|FORMAT)$",
+    
+    # Test statistics
+    t_stat = "^(t|tstat|t_stat|t_statistic|T)$",
+    chisq = "^(chisq|chi_sq|chi_square|chi2)$",
+    f_stat = "^(f|fstat|f_stat|f_statistic)$",
+    
+    # Quality/convergence indicators
+    converge = "^(converge|convergence|converged|CONVERGE)$",
+    status = "^(status|STATUS)$",
     
     # Transcriptomics
     gene_id = "^(gene_id|geneid|ensembl_id|ensembl|ensg)$",
