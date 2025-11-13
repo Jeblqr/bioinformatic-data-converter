@@ -136,8 +136,22 @@ def create_genetic_column_patterns() -> Dict[str, re.Pattern]:
             r"^(p|pval|p_value|pvalue|p-value|p.value|sig|pval_nominal|p_nospa|P)$", re.IGNORECASE
         ),
         "se": re.compile(
-            r"^(se|stderr|standard_error|std_err|std_error|SE)$", re.IGNORECASE
+            r"^(se|stderr|standard_error|std_err|std_error|SE|se_t|SE_T)$", re.IGNORECASE
         ),
+        
+        # VCF specific
+        "qual": re.compile(r"^(qual|quality|QUAL)$", re.IGNORECASE),
+        "filter": re.compile(r"^(filter|FILTER)$", re.IGNORECASE),
+        "format": re.compile(r"^(format|FORMAT)$", re.IGNORECASE),
+        
+        # Test statistics
+        "t_stat": re.compile(r"^(t|tstat|t_stat|t_statistic|T)$", re.IGNORECASE),
+        "chisq": re.compile(r"^(chisq|chi_sq|chi_square|chi2)$", re.IGNORECASE),
+        "f_stat": re.compile(r"^(f|fstat|f_stat|f_statistic)$", re.IGNORECASE),
+        
+        # Quality/convergence indicators
+        "converge": re.compile(r"^(converge|convergence|converged|CONVERGE)$", re.IGNORECASE),
+        "status": re.compile(r"^(status|STATUS)$", re.IGNORECASE),
         
         # Transcriptomics
         "gene_id": re.compile(r"^(gene_id|geneid|ensembl_id|ensembl|ensg)$", re.IGNORECASE),
@@ -265,7 +279,7 @@ def standardize_columns(
     df: pd.DataFrame,
     column_mapping: Optional[Dict[str, str]] = None,
     custom_patterns: Optional[Dict[str, re.Pattern]] = None,
-    keep_unmatched: bool = False,
+    keep_unmatched: bool = True,
 ) -> pd.DataFrame:
     """
     标准化DataFrame的列名
@@ -294,10 +308,14 @@ def standardize_columns(
 
         for original_col, std_col in col_std.items():
             if std_col is not None:
-                # 避免重复列
+                # 如果标准列名已经存在,保留原始列名以避免数据丢失
                 if std_col not in result_df.columns:
                     result_df[std_col] = df[original_col]
+                else:
+                    # 标准名已存在,使用原始列名
+                    result_df[original_col] = df[original_col]
             elif keep_unmatched:
+                # 未匹配的列保留原始列名
                 result_df[original_col] = df[original_col]
 
     return result_df
@@ -328,7 +346,7 @@ def convert_single_file(
     column_mapping: Optional[Dict[str, str]] = None,
     custom_patterns: Optional[Dict[str, re.Pattern]] = None,
     metadata: Optional[Dict[str, any]] = None,
-    keep_unmatched: bool = False,
+    keep_unmatched: bool = True,
     verbose: bool = True,
 ) -> pd.DataFrame:
     """
@@ -401,7 +419,7 @@ def convert_from_metadata(
     comment: Optional[str] = None,
     column_mapping: Optional[Dict[str, Dict[str, str]]] = None,
     custom_patterns: Optional[Dict[str, re.Pattern]] = None,
-    keep_unmatched: bool = False,
+    keep_unmatched: bool = True,
     verbose: bool = True,
 ) -> Dict[str, pd.DataFrame]:
     """

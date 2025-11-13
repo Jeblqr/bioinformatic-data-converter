@@ -29,6 +29,7 @@ test_r_functions.R
 test_r_with_env.R
 test_r_simple.R
 test_r_cli.R
+test/
 
 # Local Python virtualenv used during development
 .venv/
