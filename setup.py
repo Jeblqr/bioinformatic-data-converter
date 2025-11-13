@@ -11,8 +11,8 @@ long_description = (this_directory / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="bioconverter",
-    version="0.1.3",
-    author="Bioinformatics Data Converter Contributors",
+    version="0.1.4",
+    author="jeblqr",
     author_email="",
     description="Universal bioinformatics data converter for multi-omics data formats",
     long_description=long_description,

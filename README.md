@@ -481,7 +481,7 @@ If you use bioconverter in your research, please cite:
   author = {Bioinformatics Data Converter Contributors},
   year = {2025},
   url = {https://github.com/Jeblqr/bioConv},
-  version = {0.1.3}
+  version = {0.1.4}
 }
 ```
 

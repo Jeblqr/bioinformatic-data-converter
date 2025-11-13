@@ -1,12 +1,8 @@
 """
-bioconverter - Universal Bioinformatics Data Converter
-
-A comprehensive toolkit for converting various bioinformatics data formats
-to unified standard formats. Supports genomics (GWAS, VCF), transcriptomics
-(RNA-seq), proteomics, and metabolomics data.
+bioconverter - A unified toolkit for bioinformatics data format conversion
 """
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 # Import main modules for easier access
 from .convertor import (
