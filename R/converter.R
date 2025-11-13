@@ -14,14 +14,15 @@
 standardize_columns <- function(df, column_mapping = NULL, 
                                custom_patterns = NULL, 
                                keep_unmatched = FALSE) {
-  result_df <- data.frame()
+  # Start with an empty list to collect columns
+  result_cols <- list()
   
   # Apply manual mapping first
   if (!is.null(column_mapping) && length(column_mapping) > 0) {
     for (original_col in names(column_mapping)) {
       std_col <- column_mapping[[original_col]]
       if (original_col %in% colnames(df)) {
-        result_df[[std_col]] <- df[[original_col]]
+        result_cols[[std_col]] <- df[[original_col]]
       }
     }
   }
@@ -37,13 +38,20 @@ standardize_columns <- function(df, column_mapping = NULL,
       
       if (!is.null(std_col)) {
         # Avoid duplicate columns
-        if (!(std_col %in% colnames(result_df))) {
-          result_df[[std_col]] <- df[[original_col]]
+        if (!(std_col %in% names(result_cols))) {
+          result_cols[[std_col]] <- df[[original_col]]
         }
       } else if (keep_unmatched) {
-        result_df[[original_col]] <- df[[original_col]]
+        result_cols[[original_col]] <- df[[original_col]]
       }
     }
+  }
+  
+  # Convert list to data frame
+  if (length(result_cols) > 0) {
+    result_df <- as.data.frame(result_cols, stringsAsFactors = FALSE)
+  } else {
+    result_df <- data.frame()
   }
   
   return(result_df)

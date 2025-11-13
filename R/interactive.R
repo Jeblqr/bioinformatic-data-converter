@@ -81,10 +81,6 @@ auto_suggest_mapping <- function(input_file, n_rows = 1000) {
     }
   } else {
     # Read sample data
-    if (!requireNamespace("readr", quietly = TRUE)) {
-      stop("Package 'readr' is required but not installed.")
-    }
-    
     # Detect format
     format_info <- detect_file_format(input_file)
     
@@ -94,23 +90,37 @@ auto_suggest_mapping <- function(input_file, n_rows = 1000) {
       if (nrow(df) > n_rows) {
         df <- df[1:n_rows, , drop = FALSE]
       }
-    } else if (!is.null(format_info$sep) && format_info$sep == ",") {
-      df <- readr::read_csv(
-        input_file,
-        n_max = n_rows,
-        show_col_types = FALSE,
-        progress = FALSE
-      )
+    } else if (requireNamespace("readr", quietly = TRUE)) {
+      # Use readr if available
+      if (!is.null(format_info$sep) && format_info$sep == ",") {
+        df <- readr::read_csv(
+          input_file,
+          n_max = n_rows,
+          show_col_types = FALSE,
+          progress = FALSE
+        )
+      } else {
+        df <- readr::read_tsv(
+          input_file,
+          n_max = n_rows,
+          show_col_types = FALSE,
+          progress = FALSE
+        )
+      }
+      df <- as.data.frame(df)
     } else {
-      df <- readr::read_tsv(
+      # Fallback to base R with read_data
+      df <- read_data(
         input_file,
-        n_max = n_rows,
-        show_col_types = FALSE,
-        progress = FALSE
+        sep = format_info$sep,
+        compression = format_info$compression,
+        comment = format_info$comment,
+        is_vcf = format_info$is_vcf
       )
+      if (nrow(df) > n_rows) {
+        df <- df[1:n_rows, , drop = FALSE]
+      }
     }
-    
-    df <- as.data.frame(df)
   }
   
   # Get column matches
@@ -158,9 +168,7 @@ process_large_file <- function(filename,
                                chunk_size = 100000,
                                verbose = TRUE,
                                ...) {
-  if (!requireNamespace("readr", quietly = TRUE)) {
-    stop("Package 'readr' is required but not installed.")
-  }
+  has_readr <- requireNamespace("readr", quietly = TRUE)
   
   if (verbose) {
     cat(sprintf("\nProcessing large file: %s\n", filename))
@@ -179,11 +187,11 @@ process_large_file <- function(filename,
       ...
     )
     
-    if (!requireNamespace("readr", quietly = TRUE)) {
-      stop("Package 'readr' is required but not installed.")
+    if (has_readr) {
+      readr::write_tsv(df, output_file)
+    } else {
+      write.table(df, output_file, sep = "\t", row.names = FALSE, quote = FALSE)
     }
-    
-    readr::write_tsv(df, output_file)
     
     if (verbose) {
       cat(sprintf("\n✓ Output written to: %s\n", output_file))
@@ -198,23 +206,39 @@ process_large_file <- function(filename,
   }
   
   # Read first chunk to get column info
-  if (format_info$sep == ",") {
-    first_chunk <- readr::read_csv(
-      filename,
-      n_max = chunk_size,
-      show_col_types = FALSE,
-      progress = FALSE
-    )
+  if (has_readr) {
+    if (format_info$sep == ",") {
+      first_chunk <- readr::read_csv(
+        filename,
+        n_max = chunk_size,
+        show_col_types = FALSE,
+        progress = FALSE
+      )
+    } else {
+      first_chunk <- readr::read_tsv(
+        filename,
+        n_max = chunk_size,
+        show_col_types = FALSE,
+        progress = FALSE
+      )
+    }
+    first_chunk <- as.data.frame(first_chunk)
   } else {
-    first_chunk <- readr::read_tsv(
+    # Use base R - read entire file then subset (not ideal for large files)
+    if (verbose) {
+      cat("  Warning: readr not available, reading entire file into memory\n")
+    }
+    first_chunk <- read_data(
       filename,
-      n_max = chunk_size,
-      show_col_types = FALSE,
-      progress = FALSE
+      sep = format_info$sep,
+      compression = format_info$compression,
+      comment = format_info$comment,
+      is_vcf = format_info$is_vcf
     )
+    if (nrow(first_chunk) > chunk_size) {
+      first_chunk <- first_chunk[1:chunk_size, , drop = FALSE]
+    }
   }
-  
-  first_chunk <- as.data.frame(first_chunk)
   
   # Auto-suggest mapping if not provided
   if (is.null(column_mapping)) {
@@ -235,62 +259,73 @@ process_large_file <- function(filename,
   )
   
   # Write first chunk
-  readr::write_tsv(std_chunk, output_file)
+  if (has_readr) {
+    readr::write_tsv(std_chunk, output_file)
+  } else {
+    write.table(std_chunk, output_file, sep = "\t", row.names = FALSE, quote = FALSE)
+  }
   
   if (verbose) {
     cat(sprintf("  Processed chunk 1: %d rows\n", nrow(std_chunk)))
   }
   
-  # Process remaining chunks
-  chunk_num <- 1
-  skip_rows <- chunk_size
-  
-  repeat {
-    chunk_num <- chunk_num + 1
+  # Process remaining chunks (only if readr is available)
+  if (has_readr) {
+    chunk_num <- 1
+    skip_rows <- chunk_size
     
-    # Read next chunk
-    if (format_info$sep == ",") {
-      chunk <- readr::read_csv(
-        filename,
-        skip = skip_rows,
-        n_max = chunk_size,
-        show_col_types = FALSE,
-        progress = FALSE,
-        col_names = colnames(first_chunk)
+    repeat {
+      chunk_num <- chunk_num + 1
+      
+      # Read next chunk
+      if (format_info$sep == ",") {
+        chunk <- readr::read_csv(
+          filename,
+          skip = skip_rows,
+          n_max = chunk_size,
+          show_col_types = FALSE,
+          progress = FALSE,
+          col_names = colnames(first_chunk)
+        )
+      } else {
+        chunk <- readr::read_tsv(
+          filename,
+          skip = skip_rows,
+          n_max = chunk_size,
+          show_col_types = FALSE,
+          progress = FALSE,
+          col_names = colnames(first_chunk)
+        )
+      }
+      
+      chunk <- as.data.frame(chunk)
+      
+      # Check if we're done
+      if (nrow(chunk) == 0) {
+        break
+      }
+      
+      # Process chunk
+      std_chunk <- standardize_columns(
+        chunk,
+        column_mapping = column_mapping,
+        ...
       )
-    } else {
-      chunk <- readr::read_tsv(
-        filename,
-        skip = skip_rows,
-        n_max = chunk_size,
-        show_col_types = FALSE,
-        progress = FALSE,
-        col_names = colnames(first_chunk)
-      )
+      
+      # Append to file
+      readr::write_tsv(std_chunk, output_file, append = TRUE)
+      
+      if (verbose) {
+        cat(sprintf("  Processed chunk %d: %d rows\n", chunk_num, nrow(std_chunk)))
+      }
+      
+      skip_rows <- skip_rows + chunk_size
     }
-    
-    chunk <- as.data.frame(chunk)
-    
-    # Check if we're done
-    if (nrow(chunk) == 0) {
-      break
-    }
-    
-    # Process chunk
-    std_chunk <- standardize_columns(
-      chunk,
-      column_mapping = column_mapping,
-      ...
-    )
-    
-    # Append to file
-    readr::write_tsv(std_chunk, output_file, append = TRUE)
-    
+  } else {
+    chunk_num <- 1
     if (verbose) {
-      cat(sprintf("  Processed chunk %d: %d rows\n", chunk_num, nrow(std_chunk)))
+      cat("  Note: Chunked processing requires readr package\n")
     }
-    
-    skip_rows <- skip_rows + chunk_size
   }
   
   if (verbose) {

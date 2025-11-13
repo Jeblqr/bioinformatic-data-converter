@@ -77,15 +77,15 @@ convert_file <- function(input_file,
   
   # Save output if file path provided
   if (!is.null(output_file)) {
-    if (!requireNamespace("readr", quietly = TRUE)) {
-      stop("Package 'readr' is required but not installed.")
-    }
-    
     if (verbose) {
       cat(sprintf("\nSaving output to: %s\n", output_file))
     }
     
-    readr::write_tsv(result_df, output_file)
+    if (requireNamespace("readr", quietly = TRUE)) {
+      readr::write_tsv(result_df, output_file)
+    } else {
+      write.table(result_df, output_file, sep = "\t", row.names = FALSE, quote = FALSE)
+    }
   }
   
   return(result_df)

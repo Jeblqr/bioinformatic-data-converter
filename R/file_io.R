@@ -120,6 +120,7 @@ read_vcf_file <- function(filename, compression = NULL) {
 #'
 #' @description
 #' Read bioinformatics data file with automatic format detection.
+#' Uses readr if available, otherwise falls back to base R functions.
 #'
 #' @param filename Character. Path to file
 #' @param sep Character. Column separator (NULL for whitespace)
@@ -141,42 +142,60 @@ read_data <- function(filename, sep = NULL, compression = NULL,
     return(read_vcf_file(filename, compression))
   }
   
-  # Use readr for efficient reading
-  if (!requireNamespace("readr", quietly = TRUE)) {
-    stop("Package 'readr' is required but not installed.")
-  }
-  
   # Determine separator
   if (is.null(sep)) {
     sep <- "\t"  # Default to tab
   }
   
-  # Read with readr
-  if (sep == ",") {
-    df <- readr::read_csv(
-      filename,
-      comment = comment %||% "",
-      show_col_types = FALSE,
-      progress = FALSE
-    )
-  } else if (sep == "\t") {
-    df <- readr::read_tsv(
-      filename,
-      comment = comment %||% "",
-      show_col_types = FALSE,
-      progress = FALSE
-    )
+  # Try to use readr if available, otherwise use base R
+  if (requireNamespace("readr", quietly = TRUE)) {
+    # Read with readr
+    if (sep == ",") {
+      df <- readr::read_csv(
+        filename,
+        comment = comment %||% "",
+        show_col_types = FALSE,
+        progress = FALSE
+      )
+    } else if (sep == "\t") {
+      df <- readr::read_tsv(
+        filename,
+        comment = comment %||% "",
+        show_col_types = FALSE,
+        progress = FALSE
+      )
+    } else {
+      df <- readr::read_delim(
+        filename,
+        delim = sep,
+        comment = comment %||% "",
+        show_col_types = FALSE,
+        progress = FALSE
+      )
+    }
+    return(as.data.frame(df))
   } else {
-    df <- readr::read_delim(
-      filename,
-      delim = sep,
-      comment = comment %||% "",
-      show_col_types = FALSE,
-      progress = FALSE
+    # Fallback to base R
+    # Handle compression
+    if (!is.null(compression) && compression == "gzip" || grepl("\\.gz$", filename)) {
+      con <- gzfile(filename, "rt")
+    } else {
+      con <- file(filename, "rt")
+    }
+    
+    # Read file
+    df <- read.table(
+      con,
+      header = TRUE,
+      sep = sep,
+      comment.char = comment %||% "",
+      stringsAsFactors = FALSE,
+      check.names = FALSE
     )
+    close(con)
+    
+    return(df)
   }
-  
-  return(as.data.frame(df))
 }
 
 #' Null-coalescing operator
