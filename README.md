@@ -3,11 +3,17 @@
 [![PyPI version](https://img.shields.io/pypi/v/bioconverter.svg)](https://pypi.org/project/bioconverter/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![R 3.6+](https://img.shields.io/badge/R-3.6+-blue.svg)](https://www.r-project.org/)
 
 A comprehensive and efficient tool for converting various bioinformatics data formats to a unified, standardized format. Designed to handle all types of omics data (genomics, transcriptomics, proteomics, metabolomics) and large files (gigabytes of data).
 
-**PyPI**: https://pypi.org/project/bioconverter/  
+**Available in two independent implementations:**
+- **Python Package**: Native Python implementation (PyPI: https://pypi.org/project/bioconverter/)
+- **R Package**: Native R implementation (no Python dependency required)
+
 **GitHub**: https://github.com/Jeblqr/bioConv
+
+> **Note**: The R and Python packages are now completely independent. Each is a native implementation with consistent logic. You can use either one without installing the other.
 
 ## Features
 
@@ -165,26 +171,39 @@ process_large_file(
 )
 ```
 
-### R Interface
+### R Interface (Native R Implementation)
+
+The R package is a pure R implementation with no Python dependencies.
 
 ```r
 library(bioconverter)
 
-# Basic conversion
+# Basic conversion with auto-detection
 result <- convert_file(
   input_file = "input_data.tsv",
   output_file = "output_data.tsv",
+  auto_suggest = TRUE,
   verbose = TRUE
 )
 
-# Auto-suggest mapping
+# Auto-suggest mapping first
 suggestions <- auto_suggest_mapping("input_data.tsv", n_rows = 1000)
+print(suggestions)
 
 # Apply suggested mapping
 result <- convert_file(
   input_file = "input_data.tsv",
   output_file = "output_data.tsv",
-  column_mapping = suggestions
+  column_mapping = suggestions,
+  verbose = TRUE
+)
+
+# Process large files with chunking
+process_large_file(
+  filename = "large_data.tsv",
+  output_file = "output.tsv",
+  chunk_size = 100000,
+  verbose = TRUE
 )
 ```
 
