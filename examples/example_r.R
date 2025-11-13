@@ -41,7 +41,7 @@ cat("=============================================================\n")
 tryCatch({
   # Get suggested mappings
   suggestions <- auto_suggest_mapping(
-    filename = "test_data/transcriptomics_rnaseq.csv",
+    input_file = "test_data/transcriptomics_rnaseq.csv",
     n_rows = 100
   )
   
@@ -136,46 +136,37 @@ tryCatch({
   result <- convert_file(
     input_file = "test_data/proteomics_data.tsv",
     output_file = "output_proteomics_r.tsv",
-    generate_report = TRUE,
-    report_dir = "./reports/",
     verbose = TRUE
   )
   
-  cat("\n✓ Conversion complete with report\n")
-  cat("✓ Check ./reports/ directory for the conversion report\n")
+  cat("\n✓ Conversion complete\n")
   
 }, error = function(e) {
   cat("⚠ Error in Example 5:", conditionMessage(e), "\n")
 })
 
 
-# Example 6: Pipeline with dplyr
+# Example 6: Return data without saving
 cat("\n=============================================================\n")
-cat("Example 6: Integration with dplyr Pipeline\n")
+cat("Example 6: Return Data Without Saving File\n")
 cat("=============================================================\n")
 
 tryCatch({
-  # Convert data
+  # Convert data without saving to file
   result <- convert_file(
     input_file = "test_data/genomics_gwas.tsv",
     output_file = NULL,  # Don't save, just return data
     verbose = FALSE
   )
   
-  # Use dplyr for analysis
+  cat(sprintf("\n✓ Data converted: %d rows, %d columns\n", 
+              nrow(result), ncol(result)))
+  cat("Columns:", paste(colnames(result), collapse = ", "), "\n")
+  
+  # You can now work with the data directly
   if ("pval" %in% colnames(result)) {
-    significant <- result %>%
-      filter(pval < 0.05) %>%
-      arrange(pval) %>%
-      head(10)
-    
-    cat("\nTop 10 significant variants:\n")
-    print(significant)
-    
-    cat(sprintf("\n✓ Found %d significant variants (p < 0.05)\n", 
-                sum(result$pval < 0.05, na.rm = TRUE)))
-  } else {
-    cat("\n⚠ No p-value column found in the data\n")
+    n_significant <- sum(result$pval < 0.05, na.rm = TRUE)
+    cat(sprintf("Found %d significant variants (p < 0.05)\n", n_significant))
   }
   
 }, error = function(e) {
@@ -183,27 +174,27 @@ tryCatch({
 })
 
 
-# Example 7: Using CLI from R (alternative approach)
+# Example 7: Process large files with chunking
 cat("\n=============================================================\n")
-cat("Example 7: Using bioconverter CLI from R\n")
+cat("Example 7: Process Large Files with Chunking\n")
 cat("=============================================================\n")
 
 tryCatch({
-  cat("\nFor interactive mapping, use the CLI:\n")
-  cat("  system('bioconverter -i input.tsv -o output.tsv --interactive')\n\n")
+  cat("\nProcessing file with chunking...\n")
   
-  # Example: Run CLI command
-  cat("Running example CLI command...\n")
-  cmd <- "bioconverter -i test_data/genomics_gwas.tsv -o output_cli_r.tsv --auto-suggest"
+  # Suggest optimal chunk size
+  chunk_size <- suggest_chunk_size("test_data/genomics_gwas.tsv")
+  cat(sprintf("Suggested chunk size: %d rows\n", chunk_size))
   
-  exit_code <- system(cmd)
+  # Process large file
+  process_large_file(
+    filename = "test_data/genomics_gwas.tsv",
+    output_file = "output_large_r.tsv",
+    chunk_size = 1000,  # Use smaller for demo
+    verbose = TRUE
+  )
   
-  if (exit_code == 0) {
-    cat("\n✓ CLI command executed successfully\n")
-    cat("✓ Output saved to: output_cli_r.tsv\n")
-  } else {
-    cat("\n⚠ CLI command failed with exit code:", exit_code, "\n")
-  }
+  cat("\n✓ Large file processed successfully\n")
   
 }, error = function(e) {
   cat("⚠ Error in Example 7:", conditionMessage(e), "\n")
@@ -220,7 +211,7 @@ output_files <- c(
   "output_rnaseq_r.tsv",
   "output_custom_r.tsv",
   "output_proteomics_r.tsv",
-  "output_cli_r.tsv"
+  "output_large_r.tsv"
 )
 
 for (f in output_files) {
